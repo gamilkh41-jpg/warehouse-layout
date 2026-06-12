@@ -59,7 +59,7 @@
         
         <h3>Interactive Inventory (Click to locate)</h3>
         <span class="interactive-item" onclick="highlightGroup('orangeRacks')">
-            • <strong>17 Orange Racks (3 Levels):</strong> Cap: 91.80 m² | 78.03 m³ <br>
+            • <strong>17 Racks with orange corners (3 Levels):</strong> Cap: 91.80 m² | 78.03 m³ <br>
             <small style="color:#cbd5e1; font-size:10.5px;">Dim per Level: 200cm L x 90cm W x 85cm H</small>
         </span>
         
@@ -85,7 +85,7 @@
 
         <span class="interactive-item" onclick="highlightGroup('psychCabinet')">
             • <strong>1 Psychiatric Metal Cabinet:</strong> 4 Integrated Doors <br>
-            <small style="color:#cbd5e1; font-size:10.5px;">Secured storage adjacent to administrative area</small>
+            <small style="color:#cbd5e1; font-size:10.5px;"></small>
         </span>
     </div>
 
@@ -220,24 +220,46 @@
         scene.add(fridgesGroup);
         scene.add(coolingGroup);
         scene.add(psychCabinetGroup);
-
+const wallACMat = new THREE.MeshStandardMaterial({ color: 0xffffff }); 
+        for(let i = 0; i < 2; i++) {
+            const wallAC = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.2), wallACMat);
+            //  
+            wallAC.position.set(-2 + (i * 4), 2.5, L/2 - 0.1);
+            scene.add(wallAC);
+        }
         const fridgeMat = new THREE.MeshStandardMaterial({color: 0xa3e4d7, roughness: 0.05, metalness: 0.3});
         const glassMat = new THREE.MeshStandardMaterial({color: 0xd4efdf, transparent: true, opacity: 0.6, roughness: 0.1});
         const startFridgeX = -W/2 + 0.2; 
         const fridgeWidth = 0.90;
 
-        for(let i=0; i<3; i++) {
-            const horizontalFridge = new THREE.Group();
-            const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.95, fridgeWidth), fridgeMat);
-            body.position.y = 0.475; horizontalFridge.add(body);
-            
-            const glassTop = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.05, 0.8), glassMat);
-            glassTop.position.set(0, 0.95, 0); horizontalFridge.add(glassTop);
-            
-            horizontalFridge.position.set(startFridgeX + 0.8 + (i * 1.4), 0, -L/2 + 0.5 + (fridgeWidth/2)); 
-            fridgesGroup.add(horizontalFridge);
-        }
+     // ---  ---
+const fridgeDepth = 0.9;
+const acSpace = 1.5; 
 
+// 1. 
+for(let i = 0; i < 2; i++) {
+    const fridge = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.95, fridgeDepth), fridgeMat);
+    body.position.y = 0.475; fridge.add(body);
+    const glassTop = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.05, 0.8), glassMat);
+    glassTop.position.set(0, 0.95, 0); fridge.add(glassTop);
+    
+    fridge.rotation.y = Math.PI / 2; 
+    fridge.position.set(-W/2 + 0.6, 0, -L/2 + acSpace + (i * 1.4)); 
+    fridgesGroup.add(fridge);
+}
+
+// 2.
+for(let i = 0; i < 2; i++) {
+    const fridge = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.95, fridgeDepth), fridgeMat);
+    body.position.y = 0.475; fridge.add(body);
+    const glassTop = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.05, 0.8), glassMat);
+    glassTop.position.set(0, 0.95, 0); fridge.add(glassTop);
+
+    fridge.position.set(-W/2 + acSpace + 0.1 + (i * 1.3), 0, -L/2 + 0.6); 
+    fridgesGroup.add(fridge);
+}
         const acMesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 2.4, 0.6), new THREE.MeshStandardMaterial({color: 0xeeeeee}));
         acMesh.position.y = 1.2;
         coolingGroup.add(acMesh);
