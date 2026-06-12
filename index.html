@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medical Warehouse 3D Layout & Interactive Specs</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: sans-serif; background-color: #f0f0f0; }
+        
+        #infoPanel {
+            position: absolute; top: 15px; right: 15px; width: 360px;
+            color: white; background: rgba(15, 23, 42, 0.65); 
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            padding: 20px; border-radius: 12px; direction: ltr; z-index: 10; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease; max-height: 90vh; overflow-y: auto;
+        }
+        
+        #togglePanelBtn {
+            position: absolute; top: 15px; right: 15px; padding: 8px 14px;
+            background: #BD3A00; color: white; border: none; border-radius: 6px;
+            cursor: pointer; font-weight: bold; font-size: 12px; z-index: 11;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        #togglePanelBtn:hover { background: #9e3000; }
+
+        h2 { margin: 0 0 4px 0; font-size: 16px; color: #a3e4d7; font-weight: 600; padding-right: 80px; }
+        h3 { margin: 14px 0 6px 0; font-size: 12.5px; color: #38bdf8; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        p { margin: 0 0 5px 0; font-size: 12px; line-height: 1.4; color: #f3f4f6; }
+        
+        .designer { color: #facc15; font-weight: bold; margin-bottom: 10px; font-size: 12.5px; }
+        
+        .interactive-item {
+            padding: 6px 8px; border-radius: 4px; cursor: pointer;
+            transition: all 0.2s ease; background: rgba(255,255,255,0.03);
+            display: block; margin-bottom: 5px; border: 1px solid transparent;
+        }
+        .interactive-item:hover {
+            background: rgba(189, 58, 0, 0.3); border-color: rgba(189, 58, 0, 0.6);
+            color: #ffffff; transform: translateX(-3px);
+        }
+        .interactive-item strong { color: #fca5a5; }
+    </style>
+</head>
+<body>
+
+    <button id="togglePanelBtn" onclick="toggleInfoPanel()">Hide Specs</button>
+    
+    <div id="infoPanel">
+        <h2>Warehouse Specs</h2>
+        <p class="designer">Designed by Abdulmonem Alibrahim</p>
+        
+        <h3>Total Facility Area</h3>
+        <p>• Total Footprint: 11.5m x 17.5m x 4.0m</p>
+        <p>• Total Building Area: 201.25 m² | Volume: 805.00 m³</p>
+        
+        <h3>Net Available Storage Capacity</h3>
+        <p>• Total Net Shelving Area: <strong>139.50 m²</strong></p>
+        <p>• Total Net Storage Volume: <strong>143.19 m³</strong></p>
+        
+        <h3>Interactive Inventory (Click to locate)</h3>
+        <span class="interactive-item" onclick="highlightGroup('orangeRacks')">
+            • <strong>17 Orange Racks (3 Levels):</strong> Cap: 91.80 m² | 78.03 m³ <br>
+            <small style="color:#cbd5e1; font-size:10.5px;">Dim per Level: 200cm L x 90cm W x 85cm H</small>
+        </span>
+        
+        <span class="interactive-item" onclick="highlightGroup('silverRacks')">
+            • <strong>14 Silver Racks (5 Levels):</strong> Cap: 18.90 m² | 7.56 m³ <br>
+            <small style="color:#cbd5e1; font-size:10.5px;">Dim per Level: 90cm L x 30cm W x 40cm H</small>
+        </span>
+        
+        <span class="interactive-item" onclick="highlightGroup('pallets')">
+            • <strong>30 Wooden Floor Pallets:</strong> Cap: 28.80 m² | 57.60 m³ <br>
+            <small style="color:#cbd5e1; font-size:10.5px;">Dim: 120cm L x 80cm W x 200cm Stack H</small>
+        </span>
+
+        <span class="interactive-item" onclick="highlightGroup('fridges')">
+            • <strong>4 Cold-Chain Medical Fridges:</strong> Cap: 4.32 m² | 4.10 m³ <br>
+            <small style="color:#cbd5e1; font-size:10.5px;">Dim: 120cm L x 90cm W x 95cm H | Cold Storage</small>
+        </span>
+
+        <span class="interactive-item" onclick="highlightGroup('cooling')">
+            • <strong>3 Heavy-Duty Tower AC Units:</strong> Temperature Control <br>
+            <small style="color:#cbd5e1; font-size:10.5px;">Dim: 60cm x 60cm x 240cm H | Climate Security</small>
+        </span>
+
+        <span class="interactive-item" onclick="highlightGroup('psychCabinet')">
+            • <strong>1 Psychiatric Metal Cabinet:</strong> 4 Integrated Doors <br>
+            <small style="color:#cbd5e1; font-size:10.5px;">Secured storage adjacent to administrative area</small>
+        </span>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script>
+        function toggleInfoPanel() {
+            const panel = document.getElementById('infoPanel');
+            const btn = document.getElementById('togglePanelBtn');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                btn.innerText = 'Hide Specs';
+            } else {
+                panel.style.display = 'none';
+                btn.innerText = 'Show Specs';
+            }
+        }
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f0f0);
+        
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(13, 18, 15); 
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        dirLight.position.set(10, 40, 15);
+        scene.add(dirLight);
+
+        const L = 17.5;
+        const W = 11.5;
+        const H = 4.0;
+
+        const floorGeo = new THREE.PlaneGeometry(W, L);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0xdfdfdf, side: THREE.DoubleSide });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = Math.PI / 2;
+        scene.add(floor);
+
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0xb5b5b5, transparent: true, opacity: 0.4, side: THREE.DoubleSide });
+        
+        const wallWest = new THREE.Mesh(new THREE.PlaneGeometry(L, H), wallMat);
+        wallWest.position.set(-W/2, H/2, 0); wallWest.rotation.y = Math.PI / 2; scene.add(wallWest);
+
+        const wallNorth = new THREE.Mesh(new THREE.PlaneGeometry(W, H), wallMat);
+        wallNorth.position.set(0, H/2, -L/2); scene.add(wallNorth);
+
+        const wallSouth = new THREE.Mesh(new THREE.PlaneGeometry(W, H), wallMat);
+        wallSouth.position.set(0, H/2, L/2); scene.add(wallSouth);
+
+        const recessStart = -3.25;
+        const recessEnd = 2.75;
+        const recessDepth = 1.5;
+
+        const wallEast1Len = recessStart - (-L/2);
+        const wallEast1 = new THREE.Mesh(new THREE.PlaneGeometry(wallEast1Len, H), wallMat);
+        wallEast1.position.set(W/2, H/2, -L/2 + wallEast1Len/2);
+        wallEast1.rotation.y = -Math.PI / 2;
+        scene.add(wallEast1);
+
+        const wallEastRecessBack = new THREE.Mesh(new THREE.PlaneGeometry(6, H), wallMat);
+        wallEastRecessBack.position.set(W/2 + recessDepth, H/2, (recessStart + recessEnd)/2);
+        wallEastRecessBack.rotation.y = -Math.PI / 2;
+        scene.add(wallEastRecessBack);
+
+        const wallRecessSide1 = new THREE.Mesh(new THREE.PlaneGeometry(recessDepth, H), wallMat);
+        wallRecessSide1.position.set(W/2 + recessDepth/2, H/2, recessStart);
+        scene.add(wallRecessSide1);
+
+        const wallRecessSide2 = new THREE.Mesh(new THREE.PlaneGeometry(recessDepth, H), wallMat);
+        wallRecessSide2.position.set(W/2 + recessDepth/2, H/2, recessEnd);
+        scene.add(wallRecessSide2);
+
+        const wallEast2Len = (L/2) - recessEnd;
+        const wallEast2 = new THREE.Mesh(new THREE.PlaneGeometry(wallEast2Len, H), wallMat);
+        wallEast2.position.set(W/2, H/2, L/2 - wallEast2Len/2);
+        wallEast2.rotation.y = -Math.PI / 2;
+        scene.add(wallEast2);
+
+        const recessFloorGeo = new THREE.PlaneGeometry(recessDepth, 6);
+        const recessFloor = new THREE.Mesh(recessFloorGeo, floorMat);
+        recessFloor.rotation.x = Math.PI / 2;
+        recessFloor.position.set(W/2 + recessDepth/2, 0, (recessStart + recessEnd)/2);
+        scene.add(recessFloor);
+
+        const doorSmall = new THREE.Mesh(new THREE.BoxGeometry(1, 2, 0.15), new THREE.MeshStandardMaterial({color: 0x6e473b}));
+        doorSmall.position.set(W/2 - 1.0, 1, -L/2); scene.add(doorSmall);
+
+        const doorLarge = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 0.15), new THREE.MeshStandardMaterial({color: 0x3b6e8c}));
+        const doorLargeX = -W/2 + 5.0;
+        doorLarge.position.set(doorLargeX, 1.5, -L/2); scene.add(doorLarge);
+
+        const arrowInGroup = new THREE.Group();
+        const arrowInShaft = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.01, 0.8), new THREE.MeshBasicMaterial({color: 0x2ecc71}));
+        const arrowInTip = new THREE.Mesh(new THREE.ConeGeometry(0.3, 0.4, 4), new THREE.MeshBasicMaterial({color: 0x2ecc71}));
+        arrowInTip.rotation.x = Math.PI / 2; arrowInTip.position.z = 0.5;
+        arrowInGroup.add(arrowInShaft, arrowInTip); arrowInGroup.position.set(doorLargeX - 0.5, 0.02, -L/2 + 0.8); scene.add(arrowInGroup);
+
+        const adminGroup = new THREE.Group();
+        const woodMat = new THREE.MeshStandardMaterial({color: 0x5c4033});
+
+        const wCab1 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.8, 0.8), woodMat); 
+        wCab1.position.set(W/2 - 0.2, 0.9, -L/2 + 3.3);
+        const wCab2 = new THREE.Mesh(new THREE.BoxGeometry(0.4, 1.8, 0.8), woodMat); 
+        wCab2.position.set(W/2 - 0.2, 0.9, -L/2 + 4.2);
+
+        const desk = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.75, 1.5), new THREE.MeshStandardMaterial({color: 0xcd853f}));
+        desk.position.set(W/2 - 1.0, 0.375, -L/2 + 5.5); 
+
+        adminGroup.add(wCab1, wCab2, desk); 
+        scene.add(adminGroup);
+
+        const orangeRacksGroup = new THREE.Group();
+        const silverRacksGroup = new THREE.Group();
+        const palletsGroup = new THREE.Group();
+        const fridgesGroup = new THREE.Group();
+        const coolingGroup = new THREE.Group();
+        const psychCabinetGroup = new THREE.Group();
+
+        scene.add(orangeRacksGroup);
+        scene.add(silverRacksGroup);
+        scene.add(palletsGroup);
+        scene.add(fridgesGroup);
+        scene.add(coolingGroup);
+        scene.add(psychCabinetGroup);
+
+        const fridgeMat = new THREE.MeshStandardMaterial({color: 0xa3e4d7, roughness: 0.05, metalness: 0.3});
+        const glassMat = new THREE.MeshStandardMaterial({color: 0xd4efdf, transparent: true, opacity: 0.6, roughness: 0.1});
+        const startFridgeX = -W/2 + 0.2; 
+        const fridgeWidth = 0.90;
+
+        for(let i=0; i<3; i++) {
+            const horizontalFridge = new THREE.Group();
+            const body = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.95, fridgeWidth), fridgeMat);
+            body.position.y = 0.475; horizontalFridge.add(body);
+            
+            const glassTop = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.05, 0.8), glassMat);
+            glassTop.position.set(0, 0.95, 0); horizontalFridge.add(glassTop);
+            
+            horizontalFridge.position.set(startFridgeX + 0.8 + (i * 1.4), 0, -L/2 + 0.5 + (fridgeWidth/2)); 
+            fridgesGroup.add(horizontalFridge);
+        }
+
+        const acMesh = new THREE.Mesh(new THREE.BoxGeometry(0.6, 2.4, 0.6), new THREE.MeshStandardMaterial({color: 0xeeeeee}));
+        acMesh.position.y = 1.2;
+        coolingGroup.add(acMesh);
+
+        const acGrill = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.5, 0.02), new THREE.MeshStandardMaterial({color: 0x333333}));
+        acGrill.position.set(0, 1.8, 0.301);
+        coolingGroup.add(acGrill);
+
+        const acX = -W/2 + 0.3 + 0.01; const acZ = -L/2 + 0.3 + 0.01;
+        coolingGroup.position.set(acX, 0, acZ);
+
+        const metalMat = new THREE.MeshStandardMaterial({color: 0x94a3b8, metalness: 0.5, roughness: 0.4});
+        const cabLengthZ = 1.47; const cabHeightY = 1.4; const cabWidthX = 0.60;  
+        const mainBody = new THREE.Mesh(new THREE.BoxGeometry(cabWidthX, cabHeightY, cabLengthZ), metalMat);
+        mainBody.position.y = cabHeightY / 2;
+        psychCabinetGroup.add(mainBody);
+
+        const doorFrameMat = new THREE.MeshStandardMaterial({color: 0x556677});
+        for(let d=0; d<4; d++) {
+            const isTop = d < 2 ? 1 : 0; const isLeft = d % 2 === 0 ? 1 : 0;
+            const doorW = cabLengthZ / 2 - 0.03; const doorH = cabHeightY / 2 - 0.03;
+            const door = new THREE.Mesh(new THREE.BoxGeometry(0.02, doorH, doorW), doorFrameMat);
+            const posX = -cabWidthX/2 - 0.01;
+            const posY = isTop ? (cabHeightY * 0.72) : (cabHeightY * 0.28);
+            const posZ = isLeft ? (-cabLengthZ / 4) : (cabLengthZ / 4);
+            door.position.set(posX, posY, posZ); psychCabinetGroup.add(door);
+        }
+        psychCabinetGroup.position.set(W/2 - cabWidthX/2, 0, -L/2 + 1.0 + (cabLengthZ / 2));
+
+        const palletWoodMat = new THREE.MeshStandardMaterial({color: 0xbf8f5f, roughness: 0.9}); 
+        const boxMat = new THREE.MeshStandardMaterial({color: 0xC6A47E, roughness: 0.95}); 
+        const palletWidth = 0.60; const palletLength = 1.5; const palletHeight = 0.15;
+
+        function createPalletWithBoxes() {
+            const pGroup = new THREE.Group();
+            const pBase = new THREE.Mesh(new THREE.BoxGeometry(palletLength, palletHeight, palletWidth), palletWoodMat);
+            pBase.position.y = palletHeight / 2; pGroup.add(pBase);
+            for(let i=0; i<2; i++) {
+                const cargoBox = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.45), boxMat);
+                cargoBox.position.set(-0.35 + (i * 0.6), palletHeight + 0.25, 0); pGroup.add(cargoBox);
+            }
+            return pGroup;
+        }
+
+        const recessCenterZ = (recessStart + recessEnd) / 2; 
+        for(let i=0; i<4; i++) {
+            const p = createPalletWithBoxes();
+            p.position.set(W/2 + palletLength/2, 0, (recessCenterZ - 1.5) + (i * 1.0)); palletsGroup.add(p);
+        }
+
+        function createModernMedicalRack(lengthZ = 2.0) {
+            const rack = new THREE.Group();
+            const shelfDarkCreamMat = new THREE.MeshStandardMaterial({color: 0xD2B48C, roughness: 0.7}); 
+            const frameDarkOrangeMat = new THREE.MeshStandardMaterial({color: 0xBD3A00, metalness: 0.4, roughness: 0.6}); 
+            const medColors = [0xeeeeee, 0xd8e4e8, 0xc4dfdf, 0xebd3d0];
+            
+            for(let i=1; i<=3; i++) {
+                const levelY = i * 0.95;
+                const level = new THREE.Mesh(new THREE.BoxGeometry(1.16, 0.05, lengthZ - 0.08), shelfDarkCreamMat);
+                level.position.y = levelY; rack.add(level);
+                
+                const edgeFront = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.06, 0.04), frameDarkOrangeMat); edgeFront.position.set(0, levelY, lengthZ/2);
+                const edgeBack = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.06, 0.04), frameDarkOrangeMat); edgeBack.position.set(0, levelY, -lengthZ/2);
+                rack.add(edgeFront, edgeBack);
+
+                let currentZ = -lengthZ/2 + 0.25;
+                while(currentZ < lengthZ/2 - 0.2) {
+                    const boxW = 0.25; const boxH = 0.25; const boxL = 0.4;
+                    const medBox = new THREE.Mesh(new THREE.BoxGeometry(boxL, boxH, boxW), new THREE.MeshStandardMaterial({color: medColors[Math.floor(Math.random() * medColors.length)], roughness: 0.9}));
+                    medBox.position.set(0, levelY + 0.02 + boxH/2, currentZ); rack.add(medBox);
+                    currentZ += boxW + 0.25; 
+                }
+            }
+            const postHeight = 3.0; const postGeo = new THREE.BoxGeometry(0.05, postHeight, 0.05);
+            const pt1 = new THREE.Mesh(postGeo, frameDarkOrangeMat); pt1.position.set(-0.6, postHeight/2, -lengthZ/2);
+            const pt2 = new THREE.Mesh(postGeo, frameDarkOrangeMat); pt2.position.set(0.6, postHeight/2, -lengthZ/2);
+            const pt3 = new THREE.Mesh(postGeo, frameDarkOrangeMat); pt3.position.set(-0.6, postHeight/2, lengthZ/2);
+            const pt4 = new THREE.Mesh(postGeo, frameDarkOrangeMat); pt4.position.set(0.6, postHeight/2, lengthZ/2);
+            rack.add(pt1, pt2, pt3, pt4);
+            return rack;
+        }
+
+        const startZWithClearance = -L/2 + 4.2; const startXOrange = -W/2 + 1.5; const spacingOrange = 2.5; 
+        for(let i=0; i<6; i++) { const r = createModernMedicalRack(1.8); r.position.set(startXOrange, 0, startZWithClearance + 0.5 + (i * 2.1)); orangeRacksGroup.add(r); }
+        for(let i=0; i<5; i++) { const r = createModernMedicalRack(1.8); r.position.set(startXOrange + spacingOrange, 0, startZWithClearance + 0.5 + (i * 2.1)); orangeRacksGroup.add(r); }
+        const finalColumnX = startXOrange + (spacingOrange * 2);
+        for(let i=0; i<6; i++) { const r = createModernMedicalRack(1.8); r.position.set(finalColumnX, 0, startZWithClearance + 0.5 + (i * 2.1)); orangeRacksGroup.add(r); }
+
+        for(let i=0; i<10; i++) {
+            const p = createPalletWithBoxes(); p.position.set(finalColumnX + 1.5, 0, (startZWithClearance - 0.2) + (i * 1.2)); palletsGroup.add(p);
+        }
+
+        const silverPostMat = new THREE.MeshStandardMaterial({color: 0x777777, metalness: 0.8, roughness: 0.3}); 
+        const silverShelfMat = new THREE.MeshStandardMaterial({color: 0xaaaaaa, metalness: 0.6, roughness: 0.4}); 
+        const numSilverRacks = 14; const silverWidth = 0.80; const silverDepth = 0.35;
+        const silverStartX = -(numSilverRacks * silverWidth) / 2 + silverWidth / 2; 
+
+        for(let i=0; i<numSilverRacks; i++) {
+            const openRack = new THREE.Group();
+            for(let j=0; j<4; j++) {
+                const shelf = new THREE.Mesh(new THREE.BoxGeometry(silverWidth - 0.03, 0.04, silverDepth), silverShelfMat);
+                shelf.position.y = 0.1 + (j * 0.65); openRack.add(shelf);
+            }
+            const postGeo = new THREE.BoxGeometry(0.03, 2.1, 0.03);
+            const pl1 = new THREE.Mesh(postGeo, silverPostMat); pl1.position.set(-silverWidth/2 + 0.02, 1.05, -silverDepth/2 + 0.02);
+            const pl2 = new THREE.Mesh(postGeo, silverPostMat); pl2.position.set(silverWidth/2 - 0.02, 1.05, -silverDepth/2 + 0.02);
+            const pl3 = new THREE.Mesh(postGeo, silverPostMat); pl3.position.set(-silverWidth/2 + 0.02, 1.05, silverDepth/2 - 0.02);
+            const pl4 = new THREE.Mesh(postGeo, silverPostMat); pl4.position.set(silverWidth/2 - 0.02, 1.05, silverDepth/2 - 0.02);
+            openRack.add(pl1, pl2, pl3, pl4);
+            openRack.position.set(silverStartX + (i * silverWidth), 0, L/2 - silverDepth/2);
+            silverRacksGroup.add(openRack);
+        }
+
+        let activeBlinkingGroup = null;
+        let blinkTargetTime = 0;
+
+        function highlightGroup(groupKey) {
+            resetAllHighlights();
+            if (groupKey === 'orangeRacks') activeBlinkingGroup = orangeRacksGroup;
+            if (groupKey === 'silverRacks') activeBlinkingGroup = silverRacksGroup;
+            if (groupKey === 'pallets') activeBlinkingGroup = palletsGroup;
+            if (groupKey === 'fridges') activeBlinkingGroup = fridgesGroup;
+            if (groupKey === 'cooling') coolingGroup;
+            if (groupKey === 'psychCabinet') activeBlinkingGroup = psychCabinetGroup;
+            
+            blinkTargetTime = performance.now() + 2500; 
+        }
+
+        function resetAllHighlights() {
+            orangeRacksGroup.traverse((child) => { if (child.isMesh && child.material.emissive) child.material.emissive.setHex(0x000000); });
+            silverRacksGroup.traverse((child) => { if (child.isMesh && child.material.emissive) child.material.emissive.setHex(0x000000); });
+            palletsGroup.traverse((child) => { if (child.isMesh && child.material.emissive) child.material.emissive.setHex(0x000000); });
+            fridgesGroup.traverse((child) => { if (child.isMesh && child.material.emissive) child.material.emissive.setHex(0x000000); });
+            coolingGroup.traverse((child) => { if (child.isMesh && child.material.emissive) child.material.emissive.setHex(0x000000); });
+            psychCabinetGroup.traverse((child) => { if (child.isMesh && child.material.emissive) child.material.emissive.setHex(0x000000); });
+            activeBlinkingGroup = null;
+        }
+
+        function animate(time) {
+            requestAnimationFrame(animate);
+            controls.update();
+            
+            if (activeBlinkingGroup) {
+                if (time < blinkTargetTime) {
+                    const cycle = Math.sin(time * 0.01) * 0.5 + 0.5;
+                    const colorHex = new THREE.Color().setHSL(0.55, 1.0, 0.3 * cycle + 0.1).getHex();
+                    activeBlinkingGroup.traverse((child) => {
+                        if (child.isMesh && child.material.emissive) child.material.emissive.setHex(colorHex);
+                    });
+                } else {
+                    resetAllHighlights();
+                }
+            }
+            renderer.render(scene, camera);
+        }
+        requestAnimationFrame(animate);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
